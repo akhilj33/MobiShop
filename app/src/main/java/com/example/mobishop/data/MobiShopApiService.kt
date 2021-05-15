@@ -1,6 +1,6 @@
 package com.example.mobishop.data
 
-import com.example.mobishop.data.sources.api.model.response.MobiShopResponse
+import com.example.mobishop.data.response.MobiShopResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Url

@@ -1,4 +1,4 @@
-package com.example.mobishop.data.sources.api.model.response
+package com.example.mobishop.data.response
 
 
 import com.google.gson.annotations.SerializedName

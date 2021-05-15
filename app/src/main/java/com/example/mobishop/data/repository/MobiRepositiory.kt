@@ -1,7 +1,7 @@
 package com.example.mobishop.data.repository
 
 import com.example.mobishop.data.sources.MobiShopSource
-import com.example.mobishop.data.sources.api.model.response.MobiShopResponse
+import com.example.mobishop.data.response.MobiShopResponse
 import com.example.mobishop.domain.AppResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
