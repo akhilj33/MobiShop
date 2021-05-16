@@ -10,6 +10,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ *  Fetches data from API if internet is present or from Room database if Internet is not present
+ **/
 interface MobiRepository {
     suspend fun getMobiData(): AppResult<MobiShopResponse>
 }
@@ -21,6 +24,8 @@ class MobiRepositoryImpl(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MobiRepository {
 
+    // If internet is present then fetches data from api and save that data to room db
+    // If internet is not present, returning data from room db
     override suspend fun getMobiData(): AppResult<MobiShopResponse> {
         return withContext(dispatcher) {
             if(internetSource.hasInternetConnected()){

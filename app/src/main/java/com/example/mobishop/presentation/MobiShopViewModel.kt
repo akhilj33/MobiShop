@@ -26,6 +26,9 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
     private val _errorLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
     val errorLiveData: LiveData<Boolean> get() = _errorLiveData
 
+    /**
+     *  Fetches Mobi shop data and sends that data to view via Live data after transforming it according to the requirement of the view
+     **/
     fun getMobiShopData() {
         viewModelScope.launch {
             when (val result = mobiRepository.getMobiData()) {
@@ -44,6 +47,9 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
 
     private val exclusionMap = mutableMapOf<String, MutableList<String>>()
 
+    /**
+     *  transforms the data from API according to the requirement of the view
+     **/
     private suspend fun renderMobiShopViewEntity(mobiShopResponse: MobiShopResponse): MutableList<MobiShopEntity> {
         return withContext(Dispatchers.IO) {
             val mobiShopEntityList = mutableListOf<MobiShopEntity>()

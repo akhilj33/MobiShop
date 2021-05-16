@@ -59,9 +59,12 @@ class MobiShopAdapter(val onSubmitClick: (MobiShopSelectedItem?) -> Unit) :
 
             mobileItem.exclusions.forEach { disableViews(it) }
 
+            // Listening checked and unchecked state of radiobutton and check box. According to it
+            // enabling and disabling views as per exclusions list
             viewBinding.rb1.setOnCheckedChangeListener { buttonView, isChecked ->
                 if (isChecked) storageOptions[0].exclusions.forEach { disableViews(it) }
-                else storageOptions[0].exclusions.forEach { enableViews(it) }
+                else storageOptions[0].exclusions.filter { !mobileItem.exclusions.contains(it) }
+                    .forEach { enableViews(it) }
             }
 
             viewBinding.rb2.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -89,10 +92,10 @@ class MobiShopAdapter(val onSubmitClick: (MobiShopSelectedItem?) -> Unit) :
             }
 
 
+            // On Button click fetches all users response and send it to lambda. Also if user has
+            // not selected all required combination that shows a toast telling him/her to do so.
             viewBinding.apply {
                 btnSubmit.setOnClickListener {
-                    val item = MobiShopSelectedItem(name = mobileItem.name)
-
                     var storage = ""
                     val features = mutableListOf<String>()
                     if (rb1.isChecked)

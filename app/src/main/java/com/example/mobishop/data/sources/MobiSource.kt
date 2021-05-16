@@ -13,7 +13,9 @@ interface MobiShopSource {
 }
 
 class MobiShopSourceImpl(private val apiService: MobiShopApiService) : MobiShopSource {
-
+    /**
+     *  Fetches data from API
+     **/
     override suspend fun getMobiData(): AppResult<MobiShopResponse> {
         var response: Response<MobiShopResponse>? = null
         var exception: Exception? = null
@@ -25,6 +27,9 @@ class MobiShopSourceImpl(private val apiService: MobiShopApiService) : MobiShopS
             exception = e
         }
 
+        /**
+         * Checking Error and mapping exception if present and returning App result to repository
+         **/
         return if (exception != null) {
             AppResult.Failure(AppError(code = ERROR_CODE))
         } else if (response != null && response.isSuccessful && response.body() != null) {
