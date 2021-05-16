@@ -4,9 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mobishop.common.utils.Constants.FEATURE_ID_1
-import com.example.mobishop.common.utils.Constants.FEATURE_ID_2
-import com.example.mobishop.common.utils.Constants.FEATURE_ID_3
+import com.example.mobishop.common.utils.Utils.FEATURE_ID_MOBILE_PHONE
+import com.example.mobishop.common.utils.Utils.FEATURE_ID_STORAGE
+import com.example.mobishop.common.utils.Utils.FEATURE_ID_OTHER_FEATURE
+import com.example.mobishop.common.utils.Utils.getId
 import com.example.mobishop.data.repository.MobiRepository
 import com.example.mobishop.data.response.MobiShopResponse
 import com.example.mobishop.domain.AppResult
@@ -18,8 +19,8 @@ import kotlinx.coroutines.withContext
 
 class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewModel() {
 
-    private val _mobiResultLiveData: MutableLiveData<MobiShopEntity> = MutableLiveData()
-    val mobiResultLiveData: LiveData<MobiShopEntity> get() = _mobiResultLiveData
+    private val _mobiResultLiveData: MutableLiveData<MutableList<MobiShopEntity>> = MutableLiveData()
+    val mobiResultLiveData: LiveData<MutableList<MobiShopEntity>> get() = _mobiResultLiveData
 
     private val _errorLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
     val errorLiveData: LiveData<Boolean> get() = _errorLiveData
@@ -39,29 +40,21 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
 
     private val exclusionMap = mutableMapOf<String, MutableList<String>>()
 
-    private suspend fun renderMobiShopViewEntity(mobiShopResponse: MobiShopResponse): MobiShopEntity {
+    private suspend fun renderMobiShopViewEntity(mobiShopResponse: MobiShopResponse): MutableList<MobiShopEntity> {
        return withContext(Dispatchers.IO){
-            val mobiShopEntity = MobiShopEntity()
+            val mobiShopEntityList = mutableListOf<MobiShopEntity>()
             mobiShopResponse.exclusions.forEach { exclusions ->
                 addElementToMap(getId(exclusions[0].featureId, exclusions[0].optionsId), getId(exclusions[1].featureId, exclusions[1].optionsId))
                 addElementToMap(getId(exclusions[1].featureId, exclusions[1].optionsId), getId(exclusions[0].featureId, exclusions[0].optionsId))
             }
-            mobiShopResponse.features.forEach { feature ->
-                when(feature.featureId){
-                    FEATURE_ID_1 -> {
-                        mobiShopEntity.mobileList.addAll(feature.options.map { mapToOptions(it, feature.featureId) })
-                    }
 
-                    FEATURE_ID_2 -> {
-                        mobiShopEntity.storageOptions.addAll(feature.options.map { mapToOptions(it, feature.featureId) })
-                    }
+           val storageList = mobiShopResponse.features[1].options.map { mapToOptions(it, FEATURE_ID_STORAGE) }
+           val otherFeaturesList = mobiShopResponse.features[2].options.map { mapToOptions(it, FEATURE_ID_OTHER_FEATURE) }
 
-                    FEATURE_ID_3 -> {
-                        mobiShopEntity.otherFeatures.addAll(feature.options.map { mapToOptions(it, feature.featureId) })
-                    }
-                }
-            }
-            mobiShopEntity
+           mobiShopResponse.features[0].options.forEach {
+               mobiShopEntityList.add(MobiShopEntity(mapToOptions(it, FEATURE_ID_MOBILE_PHONE), storageList, otherFeaturesList))
+           }
+            mobiShopEntityList
         }
     }
 
@@ -77,9 +70,7 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
     private fun mapToOptions(option: MobiShopResponse.Feature.Option, featureId: String): Option {
         option.apply {
             val id = getId(featureId, id)
-            return Option(icon, id, name, exclusionMap[id])
+            return Option(icon, id, name, exclusionMap[id]?: mutableListOf())
         }
     }
-
-    private fun getId(featureId: String, optionId: String) = "$featureId-$optionId"
 }

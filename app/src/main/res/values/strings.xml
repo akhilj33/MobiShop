@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">MobiShop</string>
     <string name="error_msg">Something Went wrong</string>
+    <string name="submit">Submit</string>
+    <string name="error_msg_item">Select at least 1 option each</string>
+    <string name="phone_specification">Your Phone Specification</string>
+    <string name="ok">OK</string>
 </resources>

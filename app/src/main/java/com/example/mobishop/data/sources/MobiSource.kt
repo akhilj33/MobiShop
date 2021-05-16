@@ -1,7 +1,7 @@
 package com.example.mobishop.data.sources
 
-import com.example.mobishop.common.utils.Constants.BASE_URL
-import com.example.mobishop.common.utils.Constants.ERROR_CODE
+import com.example.mobishop.common.utils.Utils.BASE_URL
+import com.example.mobishop.common.utils.Utils.ERROR_CODE
 import com.example.mobishop.data.MobiShopApiService
 import com.example.mobishop.data.response.MobiShopResponse
 import com.example.mobishop.domain.AppError
