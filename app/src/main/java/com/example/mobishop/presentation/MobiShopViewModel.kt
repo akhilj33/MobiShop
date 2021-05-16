@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobishop.common.utils.Utils.FEATURE_ID_MOBILE_PHONE
-import com.example.mobishop.common.utils.Utils.FEATURE_ID_STORAGE
 import com.example.mobishop.common.utils.Utils.FEATURE_ID_OTHER_FEATURE
+import com.example.mobishop.common.utils.Utils.FEATURE_ID_STORAGE
 import com.example.mobishop.common.utils.Utils.getId
 import com.example.mobishop.data.repository.MobiRepository
 import com.example.mobishop.data.response.MobiShopResponse
@@ -19,7 +19,8 @@ import kotlinx.coroutines.withContext
 
 class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewModel() {
 
-    private val _mobiResultLiveData: MutableLiveData<MutableList<MobiShopEntity>> = MutableLiveData()
+    private val _mobiResultLiveData: MutableLiveData<MutableList<MobiShopEntity>> =
+        MutableLiveData()
     val mobiResultLiveData: LiveData<MutableList<MobiShopEntity>> get() = _mobiResultLiveData
 
     private val _errorLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -29,7 +30,10 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
         viewModelScope.launch {
             when (val result = mobiRepository.getMobiData()) {
                 is AppResult.Success -> {
-                  _mobiResultLiveData.value = renderMobiShopViewEntity(result.data)
+                    if (result.data.features.isNullOrEmpty() || result.data.exclusions.isNullOrEmpty())
+                        _errorLiveData.value = true
+                    else
+                        _mobiResultLiveData.value = renderMobiShopViewEntity(result.data)
                 }
                 is AppResult.Failure -> {
                     _errorLiveData.value = true
@@ -41,28 +45,45 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
     private val exclusionMap = mutableMapOf<String, MutableList<String>>()
 
     private suspend fun renderMobiShopViewEntity(mobiShopResponse: MobiShopResponse): MutableList<MobiShopEntity> {
-       return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val mobiShopEntityList = mutableListOf<MobiShopEntity>()
             mobiShopResponse.exclusions.forEach { exclusions ->
-                addElementToMap(getId(exclusions[0].featureId, exclusions[0].optionsId), getId(exclusions[1].featureId, exclusions[1].optionsId))
-                addElementToMap(getId(exclusions[1].featureId, exclusions[1].optionsId), getId(exclusions[0].featureId, exclusions[0].optionsId))
+                addElementToMap(
+                    getId(exclusions[0].featureId, exclusions[0].optionsId),
+                    getId(exclusions[1].featureId, exclusions[1].optionsId)
+                )
+                addElementToMap(
+                    getId(exclusions[1].featureId, exclusions[1].optionsId),
+                    getId(exclusions[0].featureId, exclusions[0].optionsId)
+                )
             }
 
-           val storageList = mobiShopResponse.features[1].options.map { mapToOptions(it, FEATURE_ID_STORAGE) }
-           val otherFeaturesList = mobiShopResponse.features[2].options.map { mapToOptions(it, FEATURE_ID_OTHER_FEATURE) }
+            val storageList =
+                mobiShopResponse.features[1].options.map { mapToOptions(it, FEATURE_ID_STORAGE) }
+            val otherFeaturesList = mobiShopResponse.features[2].options.map {
+                mapToOptions(
+                    it,
+                    FEATURE_ID_OTHER_FEATURE
+                )
+            }
 
-           mobiShopResponse.features[0].options.forEach {
-               mobiShopEntityList.add(MobiShopEntity(mapToOptions(it, FEATURE_ID_MOBILE_PHONE), storageList, otherFeaturesList))
-           }
+            mobiShopResponse.features[0].options.forEach {
+                mobiShopEntityList.add(
+                    MobiShopEntity(
+                        mapToOptions(it, FEATURE_ID_MOBILE_PHONE),
+                        storageList,
+                        otherFeaturesList
+                    )
+                )
+            }
             mobiShopEntityList
         }
     }
 
     private fun addElementToMap(key: String, value: String) {
-        if (key in exclusionMap.keys){
+        if (key in exclusionMap.keys) {
             exclusionMap[key]?.add(value)
-        }
-        else{
+        } else {
             exclusionMap[key] = mutableListOf(value)
         }
     }
@@ -70,7 +91,7 @@ class MainActivityViewModel(private val mobiRepository: MobiRepository) : ViewMo
     private fun mapToOptions(option: MobiShopResponse.Feature.Option, featureId: String): Option {
         option.apply {
             val id = getId(featureId, id)
-            return Option(icon, id, name, exclusionMap[id]?: mutableListOf())
+            return Option(icon, id, name, exclusionMap[id] ?: mutableListOf())
         }
     }
 }
